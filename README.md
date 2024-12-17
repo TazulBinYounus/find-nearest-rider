@@ -2,7 +2,7 @@ Here is the improved version of your documentation with some fixes for clarity, 
 
 ---
 
-# Rider Location Management System
+# Find Nearest Rider
 
 A Laravel application for managing rider locations and finding the nearest rider to a restaurant.
 
