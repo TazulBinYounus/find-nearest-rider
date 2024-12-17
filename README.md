@@ -130,7 +130,7 @@ Your application will be accessible at [http://localhost:8000](http://localhost:
 
 ### 2. Get Nearest Rider
 
-**Endpoint:** `GET /nearest-rider/{restaurant_id}`
+**Endpoint:** `GET /api/nearest-rider/{restaurant_id}`
 
 **Description:** Retrieve the nearest rider to a specified restaurant based on its geographical coordinates.
 
