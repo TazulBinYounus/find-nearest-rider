@@ -9,8 +9,6 @@ use App\Interfaces\DistanceCalculatorInterface;
 
 
 
-
-
 class RiderService
 {
   protected $distanceCalculator;
