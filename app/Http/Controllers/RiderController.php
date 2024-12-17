@@ -3,18 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreRiderLocationRequest;
-use App\Models\Restaurant;
 use App\Models\RiderLocation;
-use App\Services\DistanceCalculator; // Import the DistanceCalculator service
-use Illuminate\Support\Facades\Cache;
+use App\Services\RiderService;
 
 class RiderController extends Controller
 {
-    protected $distanceCalculator;
+    protected $riderService;
 
-    public function __construct(DistanceCalculator $distanceCalculator)
+    public function __construct(RiderService $riderService)
     {
-        $this->distanceCalculator = $distanceCalculator;
+        $this->riderService = $riderService;
     }
 
     public function storeRiderLocation(StoreRiderLocationRequest $request)
@@ -37,63 +35,6 @@ class RiderController extends Controller
 
     public function getNearestRider($restaurant_id)
     {
-        // Define a cache key
-        $cacheKey = 'nearest_rider_' . $restaurant_id;
-
-        // Attempt to retrieve the nearest rider from the cache
-        $nearestRiderData = Cache::get($cacheKey);
-
-        // If not found in cache, perform the database query
-        if (!$nearestRiderData) {
-            // Retrieve the restaurant's latitude and longitude
-            $restaurant = Restaurant::find($restaurant_id);
-            if (!$restaurant) {
-                return response()->json(['success' => false, 'message' => 'Restaurant not found.'], 404);
-            }
-
-            $restaurantLat = $restaurant->lat;
-            $restaurantLong = $restaurant->long;
-
-            // Fetch all riders' locations
-            $riders = RiderLocation::with('rider')->get();
-
-            $nearestRider = null;
-            $shortestDistance = PHP_INT_MAX;
-
-            foreach ($riders as $rider) {
-                // Calculate distance using the DistanceCalculator service
-                $distance = $this->distanceCalculator->haversineGreatCircleDistance(
-                    $restaurantLat,
-                    $restaurantLong,
-                    $rider->lat,
-                    $rider->long
-                );
-
-                if ($distance < $shortestDistance) {
-                    $shortestDistance = $distance;
-                    $nearestRider = $rider;
-                }
-            }
-
-            if ($nearestRider) {
-                // Cache the nearest rider result for 5 minutes (300 seconds)
-                Cache::put($cacheKey, [
-                    'rider' => $nearestRider,
-                    'distance' => $shortestDistance,
-                ], 300);
-            } else {
-                return response()->json(['success' => false, 'message' => 'No riders found.'], 404);
-            }
-        } else {
-            // If found in cache, prepare the response
-            $nearestRider = $nearestRiderData['rider'];
-            $shortestDistance = $nearestRiderData['distance'];
-        }
-
-        return response()->json([
-            'success' => true,
-            'nearest_rider' => $nearestRider,
-            'distance' => $shortestDistance,
-        ], 200);
+        return $this->riderService->getNearestRider($restaurant_id);
     }
 }
